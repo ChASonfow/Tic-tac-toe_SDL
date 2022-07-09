@@ -1,0 +1,4 @@
+[submodule "Tic-tac-toe/vendor/SDL"]
+	path = Tic-tac-toe/vendor/SDL
+	url = https://github.com/libsdl-org/SDL.git
+	ignore = dirty
