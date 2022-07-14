@@ -2,3 +2,6 @@
 	path = Tic-tac-toe/vendor/SDL
 	url = https://github.com/libsdl-org/SDL.git
 	ignore = dirty
+[submodule "Tic-tac-toe/vendor/SDL_ttf"]
+	path = Tic-tac-toe/vendor/SDL_ttf
+	url = https://github.com/libsdl-org/SDL_ttf.git
