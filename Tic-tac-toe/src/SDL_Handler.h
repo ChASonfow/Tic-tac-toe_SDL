@@ -1,11 +1,6 @@
 #pragma once
 #include "pch.h"
 
-#define CATCH_ERROR(condition, function_name) if(condition) { \
-			SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s Error: %s", function_name, SDL_GetError()); \
-			return false; \
-		}
-
 class SDL_Handler
 {
 public:

@@ -1,9 +1,9 @@
 #pragma once
-#include "pch.h"
+#include "Controller.hpp"
 
 struct RectObject
 {
-	inline bool IsClicked(const int32_t& x, const int32_t& y) noexcept
+	inline bool IsClicked(const int32_t& x, const int32_t& y) const noexcept
 	{
 		return x >= rect.x && x <= (rect.x + rect.w) && y >= rect.y && y <= rect.y + rect.h;
 	}
@@ -35,5 +35,4 @@ struct FieldObject : RectObject
 {
 	std::shared_ptr<SDL_Color> color;
 	PlayTeam markedBy;
-	void(*action)();
 };
