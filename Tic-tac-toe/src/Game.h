@@ -41,20 +41,21 @@ private:
 	void RenderLabels();
 	void RenderField();
 	
+#pragma region Templates
 	template<Iterable T>
-	int16_t MiniMax(T& pfCopy, bool maximazingPlayer, PlayTeam team, Uint8 depth, int16_t alpha = INT16_MIN, int16_t beta = INT16_MAX)
+	int16_t MiniMax(T& pfCopy, bool isMaximazingPlayer, PlayTeam team, Uint8 depth, int16_t alpha = INT16_MIN, int16_t beta = INT16_MAX)
 	{
 		const GameResult pre_result = CheckWinConditions(pfCopy, team);
 		if (!depth || pre_result != GameResult::NONE)
 		{
-			return pre_result == GameResult::DRAW 
+			return (pre_result == GameResult::DRAW || pre_result == GameResult::NONE)
 				? 0
 				: pre_result == static_cast<GameResult>(team)
-					? 1
-					: -1;
+					? 10 - depth
+					: depth - 10;
 		}
 
-		int16_t bestEval = maximazingPlayer ? INT16_MIN : INT16_MAX;
+		int16_t bestEval = isMaximazingPlayer ? INT16_MIN : INT16_MAX;
 		for (Uint8 i = 0; i < pfCopy.size(); ++i)
 		{
 			if (pfCopy.at(i).markedBy == PlayTeam::NONE)
@@ -64,15 +65,17 @@ private:
 				const PlayTeam oppositeTeam = team == PlayTeam::SQUARES 
 					? PlayTeam::CIRCLES 
 					: PlayTeam::SQUARES;
-				const int16_t eval = MiniMax(pfDeeperCopy, !maximazingPlayer, oppositeTeam, depth - 1, alpha, beta);
-				bestEval = std::max(bestEval, eval);
-				if (maximazingPlayer)
+				const int16_t eval = MiniMax(pfDeeperCopy, !isMaximazingPlayer, oppositeTeam, depth - 1, alpha, beta);
+				bestEval = isMaximazingPlayer 
+					? std::max(bestEval, eval)
+					: std::min(bestEval, eval);
+				if (isMaximazingPlayer)
 				{
 					alpha = std::max(alpha, eval);
 				}
 				else
 				{
-					beta = std::max(beta, eval);
+					beta = std::min(beta, eval);
 				}
 				if (beta <= alpha)
 					break;
@@ -86,15 +89,16 @@ private:
 	{
 		if (m_state == GameState::GAMEPLAY);
 		{
-			const Uint8 lineSize = static_cast<Uint8>(m_mode) & static_cast<Uint8>(GameMode::SMALL_FIELD)
-				? 3 : 5;
+			const Uint8 lineSize = static_cast<Uint8>(m_mode) & static_cast<Uint8>(GameMode::SMALL_FIELD) ? 3 : 5;
 			const Uint8 fieldSize = playfield.size();
 
 			Uint8 horizontalCount = 0, verticalCount = 0
-				, straightDiagonalCount = 0, reverseDiagonalCount = 0
+				, diagonalCount = 0, antidiagonalCount = 0
 				, emptyTilesCount = 0;
 			for (Uint16 i = 0, row = 0; i < fieldSize && row < lineSize; ++row)
 			{
+				horizontalCount = 0;
+				verticalCount = 0;
 				for (Uint16 col = 0; col < lineSize; ++i, ++col)
 				{
 					horizontalCount += playfield.at(i).markedBy == team;
@@ -102,18 +106,18 @@ private:
 
 					emptyTilesCount += playfield.at(i).markedBy == PlayTeam::NONE;
 				}
-				straightDiagonalCount += playfield.at(row * (lineSize + 1)).markedBy == team;
-				reverseDiagonalCount += playfield.at((row + 1) * lineSize - row - 1).markedBy == team;
+				diagonalCount += playfield.at(row * (lineSize + 1)).markedBy == team;
+				antidiagonalCount += playfield.at((row + 1) * lineSize - row - 1).markedBy == team;
 
 				if (horizontalCount == lineSize || verticalCount == lineSize
-					|| straightDiagonalCount == lineSize || reverseDiagonalCount == lineSize)
+					|| diagonalCount == lineSize || antidiagonalCount == lineSize)
 				{
 					return static_cast<GameResult>(team);
 				}
-				if (!emptyTilesCount)
-				{
-					return GameResult::DRAW;
-				}
+			}
+			if (!emptyTilesCount)
+			{
+				return GameResult::DRAW;
 			}
 		}
 
@@ -132,6 +136,7 @@ private:
 		}
 		return container.end();
 	}
+#pragma endregion
 
 private:
 	TTF_Font* m_font;

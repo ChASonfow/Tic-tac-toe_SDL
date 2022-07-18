@@ -160,8 +160,7 @@ bool Game::InitPlayfield()
 {
 	if (m_state != GameState::PREGAMEPLAY) return false;
 	
-	const Uint8 lineSize = static_cast<Uint8>(m_mode) & static_cast<Uint8>(GameMode::SMALL_FIELD)
-		? 3 : 5;
+	const Uint8 lineSize = static_cast<Uint8>(m_mode) & static_cast<Uint8>(GameMode::SMALL_FIELD) ? 3 : 5;
 	const Uint8 fieldSize = lineSize * lineSize;
 	m_playfield.resize(fieldSize);
 
@@ -311,7 +310,7 @@ void Game::AIMove()
 	
 	const auto is_empty = [](const FieldObject& tile) { return tile.markedBy == PlayTeam::NONE; };
 	const auto tileIt = std::find_if_not(m_playfield.begin(), m_playfield.end(), is_empty);
-	if (!tileIt._Ptr)
+	if (tileIt == m_playfield.end())
 	{
 		std::srand(std::time(NULL));
 		const Uint8 index = std::rand() % m_playfield.size();
@@ -322,13 +321,14 @@ void Game::AIMove()
 	int16_t maxEval = 0;
 	std::map<Uint8, int16_t> positions; // {tile index, minimax evaluation}
 
+	const Uint8 maxDepth = static_cast<Uint8>(m_mode) & static_cast<Uint8>(GameMode::SMALL_FIELD) ? 9 : 5;
 	for (Uint8 i = 0; i < m_playfield.size(); ++i)
 	{
 		if (m_playfield.at(i).markedBy == PlayTeam::NONE)
 		{
 			auto pfCopy = m_playfield;
 			pfCopy.at(i).markedBy = m_currentPlayer->GetTeam();
-			const int16_t eval = MiniMax(pfCopy, true, m_currentPlayer->GetTeam(), m_playfield.size());
+			const int16_t eval = MiniMax(pfCopy, true, m_currentPlayer->GetTeam(), maxDepth);
 			positions[i] = eval;
 			maxEval = std::max(maxEval, eval);
 		}
