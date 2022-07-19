@@ -69,7 +69,7 @@ private:
 				bestEval = isMaximazingPlayer 
 					? std::max(bestEval, eval)
 					: std::min(bestEval, eval);
-				if (isMaximazingPlayer)
+				/*if (isMaximazingPlayer)
 				{
 					alpha = std::max(alpha, eval);
 				}
@@ -78,7 +78,7 @@ private:
 					beta = std::min(beta, eval);
 				}
 				if (beta <= alpha)
-					break;
+					break;*/
 			}
 		}
 		return bestEval;
