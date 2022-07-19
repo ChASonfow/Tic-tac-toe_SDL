@@ -50,11 +50,14 @@ private:
 		{
 			return (pre_result == GameResult::DRAW || pre_result == GameResult::NONE)
 				? 0
-				: pre_result == static_cast<GameResult>(team)
-					? 10 - depth
-					: depth - 10;
+				: pre_result == static_cast<GameResult>(m_currentPlayer->GetTeam())
+					?  10 - depth
+					: -10 + depth;
 		}
 
+		const PlayTeam oppositeTeam = team == PlayTeam::SQUARES
+			? PlayTeam::CIRCLES
+			: PlayTeam::SQUARES;
 		int16_t bestEval = isMaximazingPlayer ? INT16_MIN : INT16_MAX;
 		for (Uint8 i = 0; i < pfCopy.size(); ++i)
 		{
@@ -62,9 +65,6 @@ private:
 			{
 				auto pfDeeperCopy = pfCopy;
 				pfDeeperCopy.at(i).markedBy = team;
-				const PlayTeam oppositeTeam = team == PlayTeam::SQUARES 
-					? PlayTeam::CIRCLES 
-					: PlayTeam::SQUARES;
 				const int16_t eval = MiniMax(pfDeeperCopy, !isMaximazingPlayer, oppositeTeam, depth - 1, alpha, beta);
 				bestEval = isMaximazingPlayer 
 					? std::max(bestEval, eval)
@@ -91,28 +91,47 @@ private:
 		{
 			const Uint8 lineSize = static_cast<Uint8>(m_mode) & static_cast<Uint8>(GameMode::SMALL_FIELD) ? 3 : 5;
 			const Uint8 fieldSize = playfield.size();
+			const PlayTeam oppositeTeam = team == PlayTeam::SQUARES
+				? PlayTeam::CIRCLES
+				: PlayTeam::SQUARES;
 
-			Uint8 horizontalCount = 0, verticalCount = 0
-				, diagonalCount = 0, antidiagonalCount = 0
+			Uint8 teamHorizontalCount = 0,	teamVerticalCount = 0
+				, teamDiagonalCount = 0,	teamAntidiagonalCount = 0
 				, emptyTilesCount = 0;
+			Uint8 opTeamHorizontalCount = 0,	opTeamVerticalCount = 0
+				, opTeamDiagonalCount = 0,		opTeamAntidiagonalCount = 0;
 			for (Uint16 i = 0, row = 0; i < fieldSize && row < lineSize; ++row)
 			{
-				horizontalCount = 0;
-				verticalCount = 0;
+				teamHorizontalCount = 0;
+				teamVerticalCount = 0;
+
+				opTeamHorizontalCount = 0;
+				opTeamVerticalCount = 0;
 				for (Uint16 col = 0; col < lineSize; ++i, ++col)
 				{
-					horizontalCount += playfield.at(i).markedBy == team;
-					verticalCount += playfield.at(row + col * lineSize).markedBy == team;
+					teamHorizontalCount		+= playfield.at(i).markedBy == team;
+					teamVerticalCount		+= playfield.at(row + col * lineSize).markedBy == team;
 
-					emptyTilesCount += playfield.at(i).markedBy == PlayTeam::NONE;
+					opTeamHorizontalCount	+= playfield.at(i).markedBy == oppositeTeam;
+					opTeamVerticalCount		+= playfield.at(row + col * lineSize).markedBy == oppositeTeam;
+
+					emptyTilesCount		+= playfield.at(i).markedBy == PlayTeam::NONE;
 				}
-				diagonalCount += playfield.at(row * (lineSize + 1)).markedBy == team;
-				antidiagonalCount += playfield.at((row + 1) * lineSize - row - 1).markedBy == team;
+				teamDiagonalCount		+= playfield.at(row * (lineSize + 1)).markedBy == team;
+				teamAntidiagonalCount	+= playfield.at((row + 1) * lineSize - row - 1).markedBy == team;
 
-				if (horizontalCount == lineSize || verticalCount == lineSize
-					|| diagonalCount == lineSize || antidiagonalCount == lineSize)
+				opTeamDiagonalCount		+= playfield.at(row * (lineSize + 1)).markedBy == oppositeTeam;
+				opTeamAntidiagonalCount += playfield.at((row + 1) * lineSize - row - 1).markedBy == oppositeTeam;
+
+				if (	teamHorizontalCount == lineSize	|| teamVerticalCount == lineSize
+					||	teamDiagonalCount == lineSize	|| teamAntidiagonalCount == lineSize)
 				{
 					return static_cast<GameResult>(team);
+				}
+				if (	opTeamHorizontalCount == lineSize	|| opTeamVerticalCount == lineSize
+					||	opTeamDiagonalCount == lineSize		|| opTeamAntidiagonalCount == lineSize)
+				{
+					return static_cast<GameResult>(oppositeTeam);
 				}
 			}
 			if (!emptyTilesCount)
