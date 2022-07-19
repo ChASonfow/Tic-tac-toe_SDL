@@ -320,6 +320,9 @@ void Game::AIMove()
 
 	int16_t maxEval = 0;
 	std::map<Uint8, int16_t> positions; // {tile index, minimax evaluation}
+	const PlayTeam oppositeTeam = m_currentPlayer->GetTeam() == PlayTeam::SQUARES
+		? PlayTeam::CIRCLES
+		: PlayTeam::SQUARES;
 
 	const Uint8 maxDepth = static_cast<Uint8>(m_mode) & static_cast<Uint8>(GameMode::SMALL_FIELD) ? 9 : 5;
 	for (Uint8 i = 0; i < m_playfield.size(); ++i)
@@ -328,7 +331,7 @@ void Game::AIMove()
 		{
 			auto pfCopy = m_playfield;
 			pfCopy.at(i).markedBy = m_currentPlayer->GetTeam();
-			const int16_t eval = MiniMax(pfCopy, true, m_currentPlayer->GetTeam(), maxDepth);
+			const int16_t eval = MiniMax(pfCopy, false, oppositeTeam, maxDepth);
 			positions[i] = eval;
 			maxEval = std::max(maxEval, eval);
 		}

@@ -51,8 +51,8 @@ private:
 			return (pre_result == GameResult::DRAW || pre_result == GameResult::NONE)
 				? 0
 				: pre_result == static_cast<GameResult>(m_currentPlayer->GetTeam())
-					?  10 - depth
-					: -10 + depth;
+					?  10 + depth
+					: -10 - depth;
 		}
 
 		const PlayTeam oppositeTeam = team == PlayTeam::SQUARES
