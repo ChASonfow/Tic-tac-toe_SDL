@@ -87,7 +87,7 @@ private:
 	template<Iterable T>
 	GameResult CheckWinConditions(T& playfield, PlayTeam team)
 	{
-		if (m_state == GameState::GAMEPLAY);
+		if (m_state == GameState::GAMEPLAY)
 		{
 			const Uint8 lineSize = static_cast<Uint8>(m_mode) & static_cast<Uint8>(GameMode::SMALL_FIELD) ? 3 : 5;
 			const Uint8 fieldSize = playfield.size();
